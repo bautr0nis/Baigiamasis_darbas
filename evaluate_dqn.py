@@ -1,36 +1,25 @@
 from stable_baselines3 import DQN
 from env.ecommerce_env import EcommercePricingEnv
+import pandas as pd
 
 # === RL AGENT ===
-env_rl = EcommercePricingEnv()
+env = EcommercePricingEnv()
 model = DQN.load("models/dqn/DQN_run1/dqn_pricing_model")
 
-obs = env_rl.reset()[0]
+obs = env.reset()[0]
 done = False
-total_reward_rl = 0
+total_reward = 0
+steps = []
 
 while not done:
     action, _ = model.predict(obs, deterministic=True)
-    obs, reward, done, _, _ = env_rl.step(action)
-    total_reward_rl += reward
+    obs, reward, done, truncated, info = env.step(action)
+    total_reward += reward
+    steps.append(info)  # store step info (includes price, quantity, etc.)
 
-print(f"🤖 RL Agent Total Reward: {total_reward_rl:.2f}")
+print(f"🤖 RL Agent Total Reward: {total_reward:.2f}")
 
-# === BASELINE AGENT (always action=1) ===
-env_base = EcommercePricingEnv()
-obs = env_base.reset()[0]
-done = False
-total_reward_base = 0
-
-while not done:
-    action = 1  # fixed price (do nothing)
-    obs, reward, done, _, _ = env_base.step(action)
-    total_reward_base += reward
-
-print(f"📊 Baseline Agent (action=1) Total Reward: {total_reward_base:.2f}")
-
-# === DIFFERENCE ===
-diff = total_reward_rl - total_reward_base
-percent = (diff / total_reward_base) * 100
-
-print(f"\n📈 Improvement: +{diff:.2f} ({percent:.2f}%) vs Baseline")
+# === Export actions and results for analysis ===
+df = pd.DataFrame(steps)
+df.to_csv("data/generated/eval_output.csv", index=False)
+print("✅ Evaluation log saved to data/generated/eval_output.csv")

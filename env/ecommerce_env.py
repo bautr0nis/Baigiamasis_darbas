@@ -1,3 +1,4 @@
+# ecommerce_env_continuous.py
 import gymnasium as gym
 import numpy as np
 import pandas as pd
@@ -13,19 +14,15 @@ class EcommercePricingEnv(gym.Env):
         self.data = pd.read_csv(data_path)
         self.original_data = self.data.copy()
 
-        # Pildome tuščias kategorijas "unknown"
         self.data["product_category_name"] = self.data["product_category_name"].fillna("unknown")
 
-        # Kategorijų kodavimas
         self.encoder = OneHotEncoder(sparse_output=False, handle_unknown='ignore')
         encoded = self.encoder.fit_transform(self.data[['product_category_name']])
         encoded_df = pd.DataFrame(encoded, columns=self.encoder.get_feature_names_out())
 
-        # Normalizuota kaina
         self.scaler = MinMaxScaler()
         self.data['price_scaled'] = self.scaler.fit_transform(self.data[['price']])
 
-        # Sudedam features
         self.features = pd.concat([
             self.data[['price_scaled', 'order_month', 'order_day']],
             encoded_df
@@ -34,22 +31,22 @@ class EcommercePricingEnv(gym.Env):
         self.max_steps = len(self.data)
         self.episode_length = episode_length
         self.current_step = 0
+        self.prev_price = None
 
-        self.action_space = spaces.Discrete(3)
+        self.action_space = spaces.Box(low=np.array([-0.2]), high=np.array([0.2]), shape=(1,), dtype=np.float32)
         self.observation_space = spaces.Box(
             low=0, high=1,
             shape=(self.features.shape[1],),
             dtype=np.float32
         )
 
-        # Paklausos modelis
         self.demand_model = joblib.load("demand_model/demand_model.pkl")
         self.category_encoder = joblib.load("demand_model/category_encoder.pkl")
 
     def reset(self, *, seed=None, options=None):
         self.current_step = 0
-        obs = self._get_obs()
-        return obs, {}
+        self.prev_price = None
+        return self._get_obs(), {}
 
     def _get_obs(self):
         if self.current_step >= self.max_steps:
@@ -68,28 +65,18 @@ class EcommercePricingEnv(gym.Env):
         delay_days = row['delivery_delay_days']
         product_id = row['product_id']
 
-        # Kainos keitimas pagal veiksmą
-        if action == 0:
-            new_price = base_price * 0.9
-        elif action == 1:
-            new_price = base_price
-        elif action == 2:
-            new_price = base_price * 1.1
-        else:
-            raise ValueError("Invalid action")
+        # Apply continuous action as percentage change
+        price_change_pct = float(np.clip(action[0], -0.2, 0.2))
+        new_price = base_price * (1.0 + price_change_pct)
 
-        # 🛡️ Kategorijos validacija
         category_name = row['product_category_name']
         if pd.isnull(category_name) or not isinstance(category_name, str):
             category_name = "unknown"
 
-        # Paruošiam input į modelį
         try:
             category_input_df = pd.DataFrame({"product_category_name": [category_name]})
             category_array = self.category_encoder.transform(category_input_df)
-        except Exception as e:
-            if self.verbose:
-                print(f"[WARNING] Encoder error with category '{category_name}': {e}")
+        except Exception:
             category_array = self.category_encoder.transform([["unknown"]])
 
         category_df = pd.DataFrame(category_array, columns=self.category_encoder.get_feature_names_out())
@@ -100,18 +87,17 @@ class EcommercePricingEnv(gym.Env):
         })
         features = pd.concat([features, category_df], axis=1)
 
-        # Paklausos prognozė
         try:
             predicted_quantity = self.demand_model.predict(features)[0]
-        except Exception as e:
-            if self.verbose:
-                print(f"[ERROR] Demand prediction failed: {e}")
+        except Exception:
             predicted_quantity = 1.0
 
         quantity_sold = max(1, int(predicted_quantity))
 
-        # 💰 Reward skaičiavimas
+        # Reward calculation
         profit = (new_price - cost - freight) * quantity_sold
+        if new_price < (cost + freight):
+            profit -= 20.0  # Strong penalty if selling under cost
 
         if review_score >= 4.0:
             profit += 1.0
@@ -120,11 +106,7 @@ class EcommercePricingEnv(gym.Env):
         if delay_days > 3:
             profit -= 0.8
 
-        reward = profit + 100  # normalizavimas
-
-        if self.verbose:
-            print(f"[Step {self.current_step}] Price={new_price:.2f}, Qty={quantity_sold}, "
-                  f"Reward={reward:.2f}, Cat={category_name}")
+        reward = profit + 100
 
         self.current_step += 1
         done = self.current_step % self.episode_length == 0 or self.current_step >= self.max_steps
@@ -132,12 +114,16 @@ class EcommercePricingEnv(gym.Env):
 
         info = {
             "product_id": product_id,
+            "price": base_price,
+            "cost": cost,
+            "freight_value": freight,
             "quantity_sold": quantity_sold,
             "new_price": new_price,
             "review_score": review_score,
             "delivery_delay_days": delay_days,
             "reward": reward,
-            "step": self.current_step
+            "step": self.current_step,
+            "product_category_name": category_name
         }
 
         return self._get_obs(), reward, done, truncated, info
