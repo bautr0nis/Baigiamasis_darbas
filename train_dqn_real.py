@@ -35,7 +35,7 @@ model = DQN(
 )
 
 # === 4. Train the model ===
-TIMESTEPS = 800_000
+TIMESTEPS = 1_000_000
 model.learn(total_timesteps=TIMESTEPS, tb_log_name=RUN_NAME)
 
 # === 5. Save the model ===

@@ -4,7 +4,7 @@ import seaborn as sns
 import os
 
 # === 1. Load evaluation output ===
-df = pd.read_csv("data/generated/eval_output_dqn_advanced.csv")
+df = pd.read_csv("data/generated/eval_output_dqn_real2.csv")
 os.makedirs("data/generated/analysis", exist_ok=True)
 
 # === 2. Reward over time ===
@@ -14,7 +14,7 @@ plt.title("DQN Reward Over Time")
 plt.xlabel("Step")
 plt.ylabel("Reward (€)")
 plt.tight_layout()
-plt.savefig("analysis/advanced/dqn_reward_over_time.png")
+plt.savefig("analysis/real2/dqn_reaward_over_time.png")
 plt.close()
 
 # === 3. Price over time ===
@@ -24,7 +24,7 @@ plt.title("Price Over Time")
 plt.xlabel("Step")
 plt.ylabel("New Price (€)")
 plt.tight_layout()
-plt.savefig("analysis/advanced/dqn_price_over_time.png")
+plt.savefig("analysis/real2/dqn_price_over_time.png")
 plt.close()
 
 # === 4. Profit vs Price ===
@@ -35,7 +35,7 @@ plt.title("Profit vs Price")
 plt.xlabel("Price (€)")
 plt.ylabel("Profit (€)")
 plt.tight_layout()
-plt.savefig("analysis/advanced/dqn_profit_vs_price.png")
+plt.savefig("analysis/real2/dqn_profit_vs_price.png")
 plt.close()
 
 # === 5. Demand vs Price ===
@@ -45,7 +45,7 @@ plt.title("Demand vs Price")
 plt.xlabel("Price (€)")
 plt.ylabel("Quantity Sold")
 plt.tight_layout()
-plt.savefig("analysis/advanced/dqn_demand_vs_price.png")
+plt.savefig("analysis/real2/dqn_demand_vs_price.png")
 plt.close()
 
 # === 6. Price change stats ===
@@ -69,7 +69,7 @@ plt.figure(figsize=(6, 6))
 plt.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%', startangle=140)
 plt.title("Kainų pokyčių pasiskirstymas")
 plt.tight_layout()
-plt.savefig("analysis/advanced/dqn_price_change_distribution.png")
+plt.savefig("analysis/real2/dqn_price_change_distribution.png")
 plt.close()
 
 # === 8. Demand level before action vs action type ===
@@ -77,7 +77,7 @@ plt.figure(figsize=(8, 5))
 sns.boxplot(x='action_type', y='quantity_sold', data=df)
 plt.title("Paklausa prieš veiksmą (kainos keitimas)")
 plt.tight_layout()
-plt.savefig("analysis/advanced/demand_vs_action_type.png")
+plt.savefig("analysis/real2/demand_vs_action_type.png")
 plt.close()
 
 # === 9. Price change frequency by category ===
@@ -88,7 +88,7 @@ category_action_pct.plot(kind='bar', stacked=True)
 plt.title("Kainos pokyčiai pagal kategoriją")
 plt.ylabel("% veiksmų")
 plt.tight_layout()
-plt.savefig("analysis/advanced/price_change_by_category.png")
+plt.savefig("analysis/real2/price_change_by_category.png")
 plt.close()
 
 # === 10. Elastingumas vs Price Change ===
@@ -96,7 +96,7 @@ plt.figure(figsize=(8, 5))
 sns.boxplot(x='action_type', y='price_elasticity', data=df)
 plt.title("Elastingumas pagal veiksmą")
 plt.tight_layout()
-plt.savefig("analysis/advanced/elasticity_vs_action.png")
+plt.savefig("analysis/real2/elasticity_vs_action.png")
 plt.close()
 
 # === 11. Policy rationality check: Low demand -> reduce? ===
@@ -129,9 +129,9 @@ summary = {
     "min_price": df['new_price'].min(),
     "mean_quantity": df['quantity_sold'].mean()
 }
-pd.DataFrame([summary]).to_csv("data/generated/analysis/dqn_summary_metrics.csv", index=False)
+pd.DataFrame([summary]).to_csv("data/generated/analysis/dqn_summary_metrics_real2.csv", index=False)
 
-print("\n\u2705 Išsaugota analizė aplanke: data/generated/analysis/")
+print("\n Išsaugota analizė aplanke: data/generated/analysis/")
 
 # === 14. Price increase violations > 10%
 df['price_change_pct'] = df['price_change'] / df['price']
@@ -140,16 +140,16 @@ df['price_increase_violation'] = df['price_change_pct'] > 0.10
 violation_count = df['price_increase_violation'].sum()
 violation_pct = df['price_increase_violation'].mean() * 100
 
-print(f"\n🚨 Kainos pokyčių > +10% pažeidimų skaičius: {violation_count} ({violation_pct:.2f}%)")
+print(f"\nKainos pokyčių > +10% pažeidimų skaičius: {violation_count} ({violation_pct:.2f}%)")
 
 plt.figure(figsize=(6, 5))
 sns.countplot(x='price_increase_violation', data=df)
-plt.title("🚨 Kainų >10% padidėjimų skaičius")
+plt.title("Kainų >10% padidėjimų skaičius")
 plt.xlabel("Pažeidimas")
 plt.ylabel("Epizodų skaičius")
 plt.xticks([0, 1], ['Ne', 'Taip'])
 plt.tight_layout()
-plt.savefig("analysis/advanced/price_violation_count.png")
+plt.savefig("analysis/real2/price_violation_count.png")
 plt.close()
 
 # === 15. Demand > Stock (over-demand) impact
@@ -157,16 +157,16 @@ df['over_demand'] = df['total_demand'] > df['stock']
 
 plt.figure(figsize=(6, 5))
 sns.countplot(x='over_demand', data=df)
-plt.title("📦 Ar paklausa viršijo sandėlį?")
+plt.title("Ar paklausa viršijo sandėlį?")
 plt.xlabel("Paklausa > Sandėlis")
 plt.ylabel("Skaičius")
 plt.xticks([0, 1], ['Ne', 'Taip'])
 plt.tight_layout()
-plt.savefig("analysis/advanced/over_demand_cases.png")
+plt.savefig("analysis/real2/over_demand_cases.png")
 plt.close()
 
 over_demand_profit = df.groupby('over_demand')['profit'].mean()
-print("\n📦 Vidutinis pelnas kai paklausa > sandėlis:")
+print("\nVidutinis pelnas kai paklausa > sandėlis:")
 print(over_demand_profit)
 
 # === 16. Rolling reward + price change over time
@@ -176,12 +176,12 @@ df['rolling_price'] = df['new_price'].rolling(10).mean()
 plt.figure(figsize=(12, 6))
 sns.lineplot(x=df['step'], y=df['rolling_reward'], label="Reward (avg)")
 sns.lineplot(x=df['step'], y=df['rolling_price'], label="Price (avg)")
-plt.title("⏱️ Rolling Reward ir Kainos Pokyčiai per Laiką")
+plt.title("Rolling Reward ir Kainos Pokyčiai per Laiką")
 plt.xlabel("Step")
 plt.ylabel("Reikšmė")
 plt.legend()
 plt.tight_layout()
-plt.savefig("analysis/advanced/rolling_reward_price.png")
+plt.savefig("analysis/real2/rolling_reward_price.png")
 plt.close()
 
 ## elastingumas
@@ -191,7 +191,7 @@ sns.barplot(x=category_elasticity.values, y=category_elasticity.index)
 plt.title("Vidutinis elastingumas pagal kategoriją")
 plt.xlabel("Price Elasticity")
 plt.tight_layout()
-plt.savefig("analysis/advanced/category_elasticity.png")
+plt.savefig("analysis/real2/category_elasticity.png")
 plt.close()
 
 # === 14. Price change action distribution ===
@@ -204,16 +204,16 @@ plt.figure(figsize=(10, 5))
 sns.barplot(x=action_dist.index, y=action_dist.values, palette="coolwarm")
 plt.xlabel("Kainos pokytis (%)")
 plt.ylabel("Veiksmų skaičius")
-plt.title("📊 Kainų keitimo veiksmų pasiskirstymas (RL sprendimai)")
+plt.title("Kainų keitimo veiksmų pasiskirstymas (RL sprendimai)")
 plt.tight_layout()
-plt.savefig("analysis/advanced/price_change_action_distribution.png")
+plt.savefig("analysis/real2/price_change_action_distribution.png")
 plt.close()
 
 
 #VIzualuas paaiskinamumas per laika
 # 📈 Savaitinis grafikas: kaina, paklausa ir pardavimai
 weekly = df.copy()
-weekly['week'] = weekly['step'] // 7
+weekly['week'] = weekly['step']
 
 agg = weekly.groupby('week').agg({
     'new_price': 'mean',
@@ -243,8 +243,39 @@ ax2.legend(lines + lines2, labels + labels2, loc='upper left')
 
 plt.title("Kainos, paklausos ir pardavimų dinamika per savaites")
 plt.tight_layout()
-plt.savefig("analysis/advanced/weekly_price_demand_sold.png")
+plt.savefig("analysis/real2/weekly_price_demand_sold.png")
 plt.close()
+
+###
+
+
+## new plots 04-19
+# Skaičiuojam, kaip dažnai keitėsi kainų kryptis tarp žingsnių
+df['price_trend'] = df['price_change'].apply(lambda x: 'up' if x > 0 else ('down' if x < 0 else 'same'))
+trend_change = df['price_trend'].ne(df['price_trend'].shift()).sum()
+trend_change_pct = trend_change / len(df) * 100
+
+print(f"Kainos krypties pokyčių skaičius: {trend_change} ({trend_change_pct:.2f}%)")
+
+# Ar RL dažniau mažina kainą, kai elastingumas didelis (t.y. labai reaguojama į kainą)
+df['elasticity_level'] = pd.cut(df['price_elasticity'], bins=[-10, -2.5, -1.5, 0], labels=["high", "medium", "low"])
+elasticity_vs_action = pd.crosstab(df['elasticity_level'], df['action_type'], normalize='index') * 100
+
+print("\nVeiksmų pasiskirstymas pagal elastingumo lygį:")
+print(elasticity_vs_action.round(2))
+
+# irational
+irrational_acts = df[(df['quantity_sold'] < 3) & (df['action_type'] == 'increase')]
+irrational_pct = len(irrational_acts) / len(df) * 100
+
+print(f"Neetiški veiksmai (paklausa maža, kaina kelta): {irrational_pct:.2f}%")
+
+# Pažiūrim kiek modelis kartojo tą patį veiksmą iš eilės
+df['same_action'] = df['action'].eq(df['action'].shift())
+repeat_count = df['same_action'].sum()
+repeat_pct = repeat_count / len(df) * 100
+
+print(f"Pakartotų veiksmų dalis (galimas exploit): {repeat_pct:.2f}%")
 
 
 import pandas as pd
@@ -255,7 +286,7 @@ import os
 
 # === FULL CURVE ===
 # === 1. Load monitor log ===
-log_path = "logs/dqn/monitor.csv"  # kelias gali skirtis pagal tavo projektą
+log_path = "logs/dqn/monitor_real2.csv.monitor.csv"  # kelias gali skirtis pagal tavo projektą
 df = pd.read_csv(log_path, skiprows=1)  # pirmoji eilutė – komentaras
 
 # === 2. Rolling average reward ===
@@ -264,10 +295,11 @@ df['rolling_reward'] = df['r'].rolling(window=50).mean()
 # === 3. Plot ===
 plt.figure(figsize=(12, 5))
 sns.lineplot(x=df.index, y='rolling_reward', data=df)
-plt.title("📈 DQN Training Reward Over Time")
+plt.title("DQN Training Reward Over Time")
 plt.xlabel("Episode")
 plt.ylabel("Rolling Avg Reward")
 plt.grid(True)
 plt.tight_layout()
-plt.savefig("analysis/advanced/full_dqn_training_reward.png")
+plt.savefig("analysis/real2/full_dqn_training_reward.png")
 plt.close()
+

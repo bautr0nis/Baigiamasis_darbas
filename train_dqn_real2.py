@@ -1,11 +1,11 @@
 from stable_baselines3 import DQN
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import DummyVecEnv
-from env.old.ecommerce_env_simple2 import AdvancedPricingEnv
+from env.ecommerce_env_real2 import AdvancedPricingEnv
 import os
 
 # === 1. Setup ===
-RUN_NAME = "DQN_run_advanced"
+RUN_NAME = "DQN_run_real2"
 model_dir = f"models/dqn/{RUN_NAME}"
 os.makedirs(model_dir, exist_ok=True)
 os.makedirs("logs/dqn", exist_ok=True)
@@ -13,8 +13,8 @@ os.makedirs("logs/dqn", exist_ok=True)
 # === 2. Environment ===
 env = DummyVecEnv([
     lambda: Monitor(
-        AdvancedPricingEnv(data_path="data/synthetic_olist_data2.csv", verbose=False),
-        filename="logs/dqn/monitor.csv"
+        AdvancedPricingEnv(data_path="data/generated/weekly_env_data_augmented.csv", verbose=False),
+        filename="logs/dqn/monitor_real2.csv"
     )
 ])
 
@@ -35,9 +35,9 @@ model = DQN(
 )
 
 # === 4. Train the model ===
-TIMESTEPS = 300_000
+TIMESTEPS = 500_000
 model.learn(total_timesteps=TIMESTEPS, tb_log_name=RUN_NAME)
 
 # === 5. Save the model ===
-model.save(f"{model_dir}/dqn_pricing_model")
-print(f"✅ DQN advanced model saved to {model_dir}/dqn_pricing_model")
+model.save(f"{model_dir}/dqn_pricing_model2")
+print(f"✅ DQN advanced model saved to {model_dir}/dqn_pricing_model2")

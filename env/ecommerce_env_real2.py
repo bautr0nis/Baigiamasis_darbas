@@ -5,7 +5,7 @@ from gymnasium import spaces
 from sklearn.preprocessing import OneHotEncoder
 
 class AdvancedPricingEnv(gym.Env):
-    def __init__(self, data_path='data/weekly_env_data.csv', episode_length=50, verbose=False):
+    def __init__(self, data_path='data/generated/weekly_env_data_augmented.csv', episode_length=52, verbose=False):
         super().__init__()
         self.verbose = verbose
         self.data = pd.read_csv(data_path)

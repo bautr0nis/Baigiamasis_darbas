@@ -3,7 +3,7 @@ import pandas as pd
 import os
 
 # Load evaluation output
-df = pd.read_csv("data/generated/eval_output_dqn_real.csv")
+df = pd.read_csv("data/generated/eval_output_dqn_real2.csv")
 
 # 2. Load the translation + super category mapping
 translation = pd.read_csv("data/unique_categories_translated_2.csv", sep=";")
@@ -29,7 +29,7 @@ top_categories = (df.groupby('main_category')['quantity_sold']
 df['week'] = df['step']
 
 # Create folder for individual plots if needed
-os.makedirs("analysis/real/category_plots", exist_ok=True)
+os.makedirs("analysis/real2/category_plots", exist_ok=True)
 
 # Generate plot for each top category
 for category in top_categories:
@@ -59,7 +59,7 @@ for category in top_categories:
 
     plt.title(f"Kategorija: {category} - Kainos, paklausos ir pardavimų dinamika")
     plt.tight_layout()
-    plt.savefig(f"analysis/real/category_plots/weekly_price_demand_sold_{category}.png")
+    plt.savefig(f"analysis/real2/category_plots/weekly_price_demand_sold_{category}.png")
     plt.close()
 
 print("✅ Grafikai sukurti kiekvienai kategorijai!")
