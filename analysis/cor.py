@@ -8,7 +8,7 @@ import os
 os.makedirs("analysis", exist_ok=True)
 
 # === 1. Load evaluation output ===
-df = pd.read_csv("../data/generated/eval_output.csv")
+df = pd.read_csv("../data/generated/eval_output_td3.csv")
 
 # === 2. Drop NaNs ===
 df = df.dropna(subset=['price', 'quantity_sold'])

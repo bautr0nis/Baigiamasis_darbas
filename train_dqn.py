@@ -2,7 +2,7 @@ from stable_baselines3 import DQN
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.vec_env import DummyVecEnv
 from stable_baselines3.common.callbacks import BaseCallback
-from env.ecommerce_env import EcommercePricingEnv
+from env.old.ecommerce_env import EcommercePricingEnv
 import os
 import pandas as pd
 
