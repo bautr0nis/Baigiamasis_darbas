@@ -5,7 +5,7 @@ import seaborn as sns
 import numpy as np
 from gymnasium import spaces
 from stable_baselines3 import DQN, PPO, A2C
-from env.ecommerce_env_real2 import AdvancedPricingEnv
+from env.ecommerce_env_all import AdvancedPricingEnv
 
 # === 1. Setup ===
 MODELS = {

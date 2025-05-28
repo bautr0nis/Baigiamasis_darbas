@@ -1,0 +1,13 @@
+,mean_contribution,total_contribution
+profit,2247.4421777877815,5142147.702778444
+bonus_aggressive_stock_clear,132.18759728307518,302445.222583676
+bonus_full_stock_sold,21.700174825174827,49650.0
+bonus_high_conversion,6.896853146853147,15780.0
+bonus_volume,3.168422202797203,7249.35
+bonus_discount_under_low_demand,0.0,0.0
+penalty_price_fatigue,-0.5310314685314685,-1215.0
+penalty_high_price_low_demand,-1.9711538461538463,-4510.0
+adjustment_low_prev_demand_and_price_change,-4.031905594405594,-9225.0
+penalty_low_sales_vs_stock,-5.2622377622377625,-12040.0
+penalty_demand_drop,-6.503496503496503,-14880.0
+penalty_stock_accumulation,-52.64881993006993,-120460.5
